@@ -11,8 +11,8 @@ class SkinCancerModel(EfficientNet):
 
     def __init__(self, download_weights, version, **kwargs):
         progress = True
-        args=efficientnet_args(version)
-        super(SkinCancerModel, self).__init__(*args,**kwargs)
+        args = efficientnet_args(version)
+        super(SkinCancerModel, self).__init__(*args, **kwargs)
         if download_weights:
             if model_urls.get(version, None) is None:
                 raise ValueError(f"No checkpoint is available for model type {version}")
@@ -20,7 +20,8 @@ class SkinCancerModel(EfficientNet):
             self.load_state_dict(state_dict)
 
         # Change Full connected layer
-        self.classifier = nn.Sequential(nn.Dropout(0.25), nn.Linear(1792, 256),nn.ReLU(),nn.Linear(256, 1),nn.Sigmoid())
+        self.classifier = nn.Sequential(nn.Dropout(0.25), nn.Linear(1280, 256), nn.ReLU(inplace=True),
+                                        nn.Linear(256, 1), nn.Sigmoid())
 
     def load_local_weights(self, path):
         state_dict = load(path)

@@ -5,6 +5,20 @@ from PIL import Image
 import numpy as np
 
 
+def data_preprocessing(raw_data_path, prep_data_path, transform):
+    raw_classes_list = os.listdir(raw_data_path)
+    for class_name in raw_classes_list:
+        class_path = raw_data_path + class_name
+        imgs_list = os.listdir(class_path)
+        if not os.path.exists(f"{prep_data_path}/{class_name}"):
+            os.mkdir(f"{prep_data_path}/{class_name}")
+        for img_name in imgs_list:
+            img_path = class_path + '/' + img_name
+            image = Image.open(img_path)
+            cropped_img = transform(image)
+            cropped_img.save(f"{prep_data_path}/{class_name}/{img_name}")
+
+
 class MelanomaDataset(Dataset):
     def __init__(self, dataset_path, classes_value_dict: dict, transform=None):
 
@@ -23,6 +37,7 @@ class MelanomaDataset(Dataset):
         if self.transform is not None:
             img = self.transform(img)
 
-        return img, torch.tensor([self.data[idx][1]],dtype=torch.float)
+        return img, torch.tensor([self.data[idx][1]], dtype=torch.float)
+
     def __len__(self):
         return self.data_size
