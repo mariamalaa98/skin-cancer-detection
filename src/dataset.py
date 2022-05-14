@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 import os
 from PIL import Image
 import numpy as np
+from torchvision.transforms.functional import normalize
 
 
 def data_preprocessing(raw_data_path, prep_data_path, transform):
@@ -41,3 +42,12 @@ class MelanomaDataset(Dataset):
 
     def __len__(self):
         return self.data_size
+class Normalize(torch.nn.Module):
+
+    def forward(self, img):
+        t_mean = torch.mean(img, dim=[1, 2])
+        t_std = torch.std(img, dim=[1, 2])
+        return normalize(img, t_mean.__array__(), t_std.__array__())
+
+    def __init__(self):
+        super().__init__()

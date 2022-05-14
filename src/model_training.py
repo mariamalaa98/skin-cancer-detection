@@ -45,6 +45,7 @@ def train(model, epochs, train_loader, lr, cuda=True):
                     time_remaing / 60.0)[:8]))
         epoch_loss = loss_sum / dataset_size
         train_losses.append(epoch_loss)
+
         #TODO add testing loop and calculate test loss and add it to array of test losses []
         #TODO save model weight if both train loss and test loss are below the minimum they had reached
 

@@ -20,7 +20,7 @@ class SkinCancerModel(EfficientNet):
             self.load_state_dict(state_dict)
 
         # Change Full connected layer
-        self.classifier = nn.Sequential(nn.Dropout(0.25), nn.Linear(1280, 256), nn.ReLU(inplace=True),
+        self.classifier = nn.Sequential(nn.Dropout(0.25), nn.Linear(1280, 256),nn.Dropout(0.25), nn.ReLU(inplace=True),
                                         nn.Linear(256, 1), nn.Sigmoid())
 
     def load_local_weights(self, path):
