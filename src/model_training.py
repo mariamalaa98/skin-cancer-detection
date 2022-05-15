@@ -2,6 +2,8 @@ from torch.optim import Adam
 import torch
 import time
 import sys
+import os
+import pandas as pd
 
 
 def train(model, epochs, train_loader, lr, cuda=True):
@@ -10,7 +12,7 @@ def train(model, epochs, train_loader, lr, cuda=True):
     batch_size = train_loader.batch_size
     no_batches = len(train_loader)
     dataset_size = float(len(train_loader.dataset))
-    train_losses=[]
+    train_losses = []
 
     if cuda:
         model.cuda()
@@ -46,9 +48,29 @@ def train(model, epochs, train_loader, lr, cuda=True):
         epoch_loss = loss_sum / dataset_size
         train_losses.append(epoch_loss)
 
-        #TODO add testing loop and calculate test loss and add it to array of test losses []
-        #TODO save model weight if both train loss and test loss are below the minimum they had reached
+        # TODO add testing loop and calculate test loss and add it to array of test losses []
+        # TODO save model weight if both train loss and test loss are below the minimum they had reached
 
         print(f" epoch {e + 1} loss ={epoch_loss}")
-        #TODO return array of train_losses and test_losses
+        # TODO return array of train_losses and test_losses
     return train_losses
+
+
+def save_epochs_to_csv(csv_save_path, train_loss, no_train_rows, test_loss, no_test_rows, time_taken, notes=None):
+    if notes is None:
+        notes = ""
+    date_now = datetime.now()
+    if len(csv_save_path) == 0:
+        full_path = "train_data.csv"
+    else:
+        full_path = f"{csv_save_path}/train_data.csv"
+    row = [[train_loss, no_train_rows, test_loss, no_test_rows, time_taken, notes, date_now.strftime('%d/%m/%Y'),
+            date_now.strftime('%I:%M %p')]]
+    df = pd.DataFrame(row,
+                      columns=["Train Loss", "no train rows", "Test Loss", "No test rows", "Time taken (M)", "Notes",
+                               "Date", "Time"])
+
+    if not os.path.exists(full_path):
+        df.to_csv(full_path)
+    else:
+        df.to_csv(full_path, mode='a', header=False)
