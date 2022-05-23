@@ -20,7 +20,8 @@ class SkinCancerModel(EfficientNet):
             self.load_state_dict(state_dict)
 
         # Change Full connected layer
-        self.classifier = nn.Sequential(nn.Dropout(0.25), nn.Linear(1280, 256),nn.Dropout(0.25), nn.ReLU(inplace=True),
+        self.classifier = nn.Sequential(nn.Dropout(p=0.25), nn.Linear(1280, 256), nn.ReLU(inplace=True),
+                                        nn.Dropout(p=0.25),
                                         nn.Linear(256, 1), nn.Sigmoid())
 
     def load_local_weights(self, path):
@@ -61,3 +62,30 @@ def efficientnet_args(version):
     else:
         raise ValueError(f"invalid version of efficientnet '{version}' ")
     return get_inverted_residual_setting(width_mult, depth_mult), dropout
+
+
+class MelanomaClassifier(nn.Module):
+    def __init__(self, patient_data_size):
+        super().__init__()
+        self.features = SkinCancerModel(True, "efficientnet_b1")
+        self.features.load_local_weights("weights.pt")
+        self.features.classifier = nn.Sequential(self.features.classifier[0], self.features.classifier[1],
+                                                 self.features.classifier[2])
+
+        input_size = self.features.classifier[-2].out_features + patient_data_size
+        self.classifier = nn.Sequential(nn.Linear(input_size, 64), nn.ReLU(inplace=True), nn.Linear(64, 1),
+                                        nn.Sigmoid())
+
+    def forward(self, image, data):
+        features = self.features(image)
+        input_vector = torch.cat([features, data], dim=1)
+        output=self.classifier(input_vector)
+        return output
+
+    def load_local_weights(self, path):
+        state_dict = load(path)
+        self.load_state_dict(state_dict)
+
+    def save_weights(self, path):
+        state_dict = self.state_dict()
+        save(state_dict, path)
