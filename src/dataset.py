@@ -81,7 +81,7 @@ class MelanomaHam1000Dataset(Dataset):
 
     def __getitem__(self, idx):
         path = f"{self.dataset_path}/{self.data[idx][0]}.jpg"
-        image = Image.open(path)
+        image = np.array(Image.open(path))
         if self.transform is not None:
             image = self.transform(image)
         image = image.float()
@@ -89,8 +89,8 @@ class MelanomaHam1000Dataset(Dataset):
 
         label = self.data[idx][1]
 
-        return image, torch.tensor(patient_data,dtype=torch.float), torch.tensor(label,
-                                                                   dtype=torch.float)
+        return image, torch.tensor(patient_data, dtype=torch.float), torch.tensor([label],
+                                                                                  dtype=torch.float)
 
     def __len__(self):
         return self.data_size
@@ -101,6 +101,7 @@ def ham_data_csv_preprocessing(csv_path):
     del data['lesion_id']
     del data['dx_type']
     del data['dataset']
+
     for i in range(data.shape[0]):
         if data.iloc[i][1] == "mel":
             data.at[i, 'dx'] = 1
@@ -110,6 +111,7 @@ def ham_data_csv_preprocessing(csv_path):
     # Drop sex unknown
     idx_to_remove = set()
     for i in range(len(data)):
+
         if data.iloc[i][3] == "unknown":
             idx_to_remove.add(i)
 
@@ -119,6 +121,7 @@ def ham_data_csv_preprocessing(csv_path):
     data = data.drop(index=list(idx_to_remove))
 
     dummy_cols = ['localization', 'sex']
+    data.dropna(inplace=True)
     for col in dummy_cols:
         dummy = pd.get_dummies(data[col], prefix=col, drop_first=False)
         data = pd.concat([data, dummy], axis=1)
