@@ -3,3 +3,4 @@ dataset/
 .ipynb_checkpoints/
 __pycache__/
 test_er7am_den_omy.ipynb
+model_weights/
