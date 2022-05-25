@@ -114,9 +114,7 @@ def classifier_test_step(model, loss_function, img, data, label, cuda):
     output = model(img, data)
     loss = loss_function(output, label)
 
-
-
-    return loss
+    return loss.item()
 
 
 def features_test_step(model, loss_function, img, label, cuda):
@@ -130,10 +128,19 @@ def features_test_step(model, loss_function, img, label, cuda):
 
 
 def test_model(model, test_loader, loss_function, cuda, test_type):
-    test_loss = 0.0
+    batch_size = test_loader.batch_size
+    no_batches = len(test_loader)
+    dataset_size = float(len(test_loader.dataset))
     model.eval()
+    if cuda:
+        model.cuda()
+    loss_sum = 0.0
+    cnt = 0.0
+    time_sum = 0.0
     with torch.no_grad():
         for data in test_loader:
+            ts = time.time()
+
             if test_type == "features":
                 img, label = data
                 loss = features_test_step(model, loss_function, img, label, cuda)
@@ -143,10 +150,20 @@ def test_model(model, test_loader, loss_function, cuda, test_type):
             else:
                 raise ValueError("invalid test mod")
 
-            test_loss += loss * test_loader.batch_size
+            loss_sum += loss * test_loader.batch_size
 
-    test_loss /= len(test_loader.dataset)
-    return test_loss
+            cnt += 1.0
+            finished = int((cnt * 10) / no_batches)
+            remaining = 10 - finished
+            te = time.time()
+            time_sum += (te - ts)
+            avg_time = time_sum / cnt
+            time_remaing = avg_time * (no_batches - cnt)
+            sys.stdout.write("\r Testing  [" + str(
+                "=" * finished + str("." * remaining) + "] time remaining = " + str(
+                    time_remaing / 60.0)[:8] + " Avg Test_Loss=" + str(loss_sum / (cnt * batch_size))[:8]))
+    loss_sum /= dataset_size
+    return loss_sum
 
 
 def train_model(model, no_of_epochs, lr, train_loader, test_loader, train_type, cuda=False, weight_saving_path=None,
@@ -159,8 +176,10 @@ def train_model(model, no_of_epochs, lr, train_loader, test_loader, train_type, 
     dataset_size = float(len(train_loader.dataset))
     min_test_loss = test_model(model, test_loader, loss_function, cuda, train_type)
     model.cuda()
-    for e in range(no_of_epochs):
 
+    print(f"Test loss before Training {min_test_loss}")
+    for e in range(no_of_epochs):
+        model.train()
         train_loss_sum = 0.0
         cnt = 0.0
         time_sum = 0.0
@@ -178,7 +197,7 @@ def train_model(model, no_of_epochs, lr, train_loader, test_loader, train_type, 
                 loss = classifier_train_step(model, optimizer, loss_function, img, data, label, cuda)
             else:
                 raise ValueError("invalid train mod")
-            current_train_loss = loss * train_loader.batch_size
+            current_train_loss = loss* train_loader.batch_size
             train_loss_sum += current_train_loss
 
             # calculate epoch info
@@ -193,8 +212,8 @@ def train_model(model, no_of_epochs, lr, train_loader, test_loader, train_type, 
             sys.stdout.write("\r epoch " + str(e + 1) + " [" + str(
                 "=" * int((cnt * 10) / no_batches) + str("." * remaining) + "] time remaining = " + str(
                     time_remaing / 60.0)[:8]) + " Avg train_loss=" + str(
-                train_loss_sum / (cnt * train_loader.batch_size)))
-
+                train_loss_sum / (cnt * train_loader.batch_size))[:8])
+        print()
         train_loss_avg = train_loss_sum / dataset_size
         train_losses_list.append(train_loss_avg)
 

@@ -73,7 +73,7 @@ class MelanomaClassifier(nn.Module):
                                                  self.features.classifier[2])
 
         input_size = self.features.classifier[-2].out_features + patient_data_size
-        self.classifier = nn.Sequential(nn.Linear(input_size, 64), nn.ReLU(inplace=True),nn.Dropout(0.3), nn.Linear(64, 1),
+        self.classifier = nn.Sequential(nn.Linear(input_size, 64), nn.SiLU(inplace=True),nn.Dropout(0.35), nn.Linear(64, 1),
                                         nn.Sigmoid())
 
     def forward(self, image, data):
