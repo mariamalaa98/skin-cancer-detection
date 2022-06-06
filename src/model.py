@@ -65,21 +65,22 @@ def efficientnet_args(version):
 
 
 class MelanomaClassifier(nn.Module):
-    def __init__(self, patient_data_size):
+    def __init__(self, patient_data_size, feature_model_weights):
         super().__init__()
         self.features = SkinCancerModel(True, "efficientnet_b1")
-        self.features.load_local_weights("weights.pt")
+        self.features.load_local_weights(feature_model_weights)
         self.features.classifier = nn.Sequential(self.features.classifier[0], self.features.classifier[1],
                                                  self.features.classifier[2])
 
         input_size = self.features.classifier[-2].out_features + patient_data_size
-        self.classifier = nn.Sequential(nn.Linear(input_size, 64), nn.SiLU(inplace=True),nn.Dropout(0.35), nn.Linear(64, 1),
+        self.classifier = nn.Sequential(nn.Linear(input_size, 128), nn.ReLU(inplace=True), nn.Dropout(0.35),
+                                        nn.Linear(128, 32),nn.ReLU(inplace=True),nn.Dropout(0.35),nn.Linear(32, 1),
                                         nn.Sigmoid())
 
     def forward(self, image, data):
         features = self.features(image)
         input_vector = torch.cat([features, data], dim=1)
-        output=self.classifier(input_vector)
+        output = self.classifier(input_vector)
 
         return output
 
