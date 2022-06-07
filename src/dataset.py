@@ -2,7 +2,7 @@ import random
 
 import pandas as pd
 import torch
-from torch.utils.data import Dataset,IterableDataset
+from torch.utils.data import Dataset, IterableDataset
 import os
 from PIL import Image
 import numpy as np
@@ -55,76 +55,76 @@ class Normalize(torch.nn.Module):
 
 class MelanomaImageDataset(IterableDataset):
     LABEL_IDX = 1
-    IMG_PATH_IDX=0
+    IMG_PATH_IDX = 0
 
-    def __init__(self, csv_path, dataset_path,transform=None):
-        df = pd.read_csv(csv_path, index_col=False)
-        full_data = df.iloc[:,[self.IMG_PATH_IDX,self.LABEL_IDX]].to_numpy()  # [[img_path,img_value]]
-        self.all_melanoma_rows=[]
-        self.all_non_melanoma_rows=[]
+    def __init__(self, csv_path, dataset_path, transform=None):
+        full_data = self.get_dataframe(csv_path)
+        self.all_melanoma_rows = []
+        self.all_non_melanoma_rows = []
 
         for i in range(len(full_data)):
-            if full_data[i][self.LABEL_IDX]==1:
+            if full_data[i][self.LABEL_IDX] == 1:
                 self.all_melanoma_rows.append(full_data[i])
             else:
                 self.all_non_melanoma_rows.append(full_data[i])
         self.transform = transform
         self.dataset_path = dataset_path
-        self.no_rows=len(self.all_melanoma_rows)*2
+        self.no_rows = len(self.all_melanoma_rows) * 2
+
+    def get_dataframe(self, csv_path):
+        df = pd.read_csv(csv_path, index_col=False)
+        full_data = df.iloc[:, [self.IMG_PATH_IDX, self.LABEL_IDX]].to_numpy()  # [[img_path,img_value]]
+        return full_data
 
     def get_random_balanced_rows(self):
-        sample_size=len(self.all_melanoma_rows)
-        epoch_non_melanoma_rows=random.sample(self.all_non_melanoma_rows,sample_size)
+        sample_size = len(self.all_melanoma_rows)
+        epoch_non_melanoma_rows = random.sample(self.all_non_melanoma_rows, sample_size)
         random.shuffle(self.all_melanoma_rows)
         random.shuffle(epoch_non_melanoma_rows)
-        rows=[]
+        rows = []
         for i in range(self.no_rows):
-            idx=i//2
-            if i&1:
+            idx = i // 2
+            if i & 1:
                 rows.append(epoch_non_melanoma_rows[idx])
             else:
                 rows.append(self.all_melanoma_rows[idx])
         return rows
 
-
     def __iter__(self):
-        epoch_data=self.get_random_balanced_rows()
+        epoch_data = self.get_random_balanced_rows()
         for i in range(self.no_rows):
             path = f"{self.dataset_path}/{epoch_data[i][self.IMG_PATH_IDX]}.jpg"
             img = np.array(Image.open(path))
             if self.transform is not None:
                 img = self.transform(img)
-            yield img,torch.tensor([epoch_data[i][self.LABEL_IDX]], dtype=torch.float)
-
+            yield img, torch.tensor([epoch_data[i][self.LABEL_IDX]], dtype=torch.float)
 
     def __len__(self):
         return self.no_rows
 
 
-class MelanomaHam1000Dataset(Dataset):
+class MelanomaHam1000Dataset(MelanomaImageDataset):
 
     def __init__(self, csv_path, dataset_path, transform=None):
+        super().__init__(csv_path, dataset_path, transform)
+
+    def get_dataframe(self, csv_path):
         df = pd.read_csv(csv_path, index_col=False)
-        self.data = df.to_numpy()  # [[img_path,img_value]]
-        self.data_size = len(df)
-        self.transform = transform
-        self.dataset_path = dataset_path
+        full_data = df.to_numpy()  # [[img_path,img_value]]
+        return full_data
 
-    def __getitem__(self, idx):
-        path = f"{self.dataset_path}/{self.data[idx][0]}.jpg"
-        image = np.array(Image.open(path))
-        if self.transform is not None:
-            image = self.transform(image)
-        image = image.float()
-        patient_data = self.data[idx][2:].astype(float)
+    def __iter__(self):
 
-        label = self.data[idx][1]
+        epoch_data = self.get_random_balanced_rows()
+        for i in range(self.no_rows):
+            path = f"{self.dataset_path}/{epoch_data[i][self.IMG_PATH_IDX]}.jpg"
+            img = np.array(Image.open(path))
+            if self.transform is not None:
+                img = self.transform(img)
+            patient_data = epoch_data[i][2:].astype(float)
 
-        return image, torch.tensor(patient_data, dtype=torch.float), torch.tensor([label],
-                                                                                  dtype=torch.float)
-
-    def __len__(self):
-        return self.data_size
+            yield img, torch.tensor(patient_data, dtype=torch.float), torch.tensor([epoch_data[i][self.LABEL_IDX]],
+                                                                                   dtype=torch.float)
 
 
 def ham_data_csv_preprocessing(csv_path):
