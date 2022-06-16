@@ -1,11 +1,11 @@
 ,Mertic,Value
-0,processed rows,2441.0
-1,Model accuracy on Proceed Faces %,93.691
-2,False Positive,97.0
-3,False Negative,57.0
-4,precision,0.7012195121951219
-5,recall,0.7986111111111112
-6,fbeta-score,0.3546260940449631
-7,avg same person distance,0.7122299023555066
-8,avg diff person distance,0.048973245483578794
-9,Model tolerance,0.3
+0,processed rows,574.0
+1,Model accuracy on Proceed Faces %,90.941
+2,False Positive,23.0
+3,False Negative,29.0
+4,precision,0.9148936170212766
+5,recall,0.8958333333333334
+6,fbeta-score,0.4822136448988108
+7,avg melanoma,0.8699814112993275
+8,avg non-melanoma,0.13439361869347347
+9,Model tolerance,0.65
