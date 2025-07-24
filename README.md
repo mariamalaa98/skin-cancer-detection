@@ -45,6 +45,23 @@ This project includes all the essential components for building and evaluating a
 ```bash
 📦 skin-cancer-detection
  ┣ 📁 Dataset/                   # Dataset folders and classes
+
+
+
+🛠️ Built With
+Python 3.8+
+
+TensorFlow / Keras – Model building & training
+
+NumPy / Pandas – Data handling
+
+Matplotlib / Seaborn – Visualization
+
+scikit-learn – Evaluation metrics
+
+🚀 Getting Started
+📋 Prerequisites
+Before running the notebooks, make sure you have the following Python packages installed:
  ┣ 📄 Preprocessing.ipynb        # Image resizing and preprocessing notebook
  ┣ 📄 TrainModel.ipynb           # Model training and evaluation notebook
  ┣ 📄 README.md                  # Project documentation
