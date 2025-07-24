@@ -66,3 +66,29 @@ Before running the notebooks, make sure you have the following Python packages i
  ┣ 📄 TrainModel.ipynb           # Model training and evaluation notebook
  ┣ 📄 README.md                  # Project documentation
  ┗ 📄 model.h5                   # Saved trained model weights
+
+# 🧠 Skin Cancer Detection using CNN
+
+A deep learning project for detecting skin cancer (benign vs. malignant) using Convolutional Neural Networks (CNNs) with TensorFlow/Keras.
+
+---
+
+## 🛠️ Built With
+
+- **Python 3.8+**
+- **TensorFlow / Keras** – Model building & training  
+- **NumPy / Pandas** – Data handling  
+- **Matplotlib / Seaborn** – Visualization  
+- **scikit-learn** – Evaluation metrics  
+
+---
+
+## 🚀 Getting Started
+
+### 📋 Prerequisites
+
+Before running the notebooks, make sure you have the following Python packages installed:
+
+```bash
+pip install tensorflow numpy pandas matplotlib seaborn scikit-learn
+
